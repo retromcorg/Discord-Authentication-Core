@@ -3,6 +3,7 @@ package com.johnymuffin.beta.discordauth;
 import com.johnymuffin.beta.discordauth.commands.DiscordAuthCommand;
 import com.johnymuffin.discordcore.DiscordCore;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,6 +46,12 @@ public class DiscordAuthentication extends JavaPlugin {
         discord.Discord().jda.addEventListener(DAL);
 
         final DiscordAuthenticationCommands DAC = new DiscordAuthenticationCommands(plugin);
+
+
+        //Update Last Known Username Logic
+        final DiscordAuthUUIDJoinListener DAUJL = new DiscordAuthUUIDJoinListener(plugin);
+        getServer().getPluginManager().registerEvent(Event.Type.CUSTOM_EVENT, DAUJL, Event.Priority.Monitor, plugin);
+
 
 
     }

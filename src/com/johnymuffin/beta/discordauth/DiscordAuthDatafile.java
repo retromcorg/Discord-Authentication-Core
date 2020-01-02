@@ -94,7 +94,12 @@ public class DiscordAuthDatafile {
 
     }
 
+    @Deprecated
     public String getInitialUsernameFromDiscordID(String discordID) {
+        return getLastUsernameFromDiscordID(discordID);
+    }
+
+    public String getLastUsernameFromDiscordID(String discordID) {
         if(!isDiscordIDAlreadyLinked(discordID)) {
             return null;
         }
@@ -115,6 +120,16 @@ public class DiscordAuthDatafile {
         return null;
     }
 
+    public void updateLastKnownUsername(String uuid, String username) {
+        if(!discordAuthDatabase.containsKey(uuid)) {
+            return;
+        }
+        if(!discordAuthDatabase.get(uuid).get("username").equals(username)) {
+            discordAuthDatabase.get(uuid).replace("username", username);
+        }
+
+
+    }
 
 
     public void saveConfig() {
