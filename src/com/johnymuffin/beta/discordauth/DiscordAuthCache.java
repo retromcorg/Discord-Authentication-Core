@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
-import static com.johnymuffin.uuidcore.UUIDAPI.getUserUUID;
 
 public class DiscordAuthCache {
     DiscordAuthentication plugin;

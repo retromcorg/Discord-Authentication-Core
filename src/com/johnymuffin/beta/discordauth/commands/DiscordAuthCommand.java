@@ -1,14 +1,13 @@
 package com.johnymuffin.beta.discordauth.commands;
 
 import com.johnymuffin.beta.discordauth.DiscordAuthentication;
+import com.projectposeidon.api.PoseidonUUID;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
-
-import static com.johnymuffin.uuidcore.UUIDAPI.getUserUUID;
 
 public class DiscordAuthCommand implements CommandExecutor {
     private DiscordAuthentication plugin;
@@ -29,7 +28,7 @@ public class DiscordAuthCommand implements CommandExecutor {
         Player player = (Player) commandSender;
 
         if (cmd.equalsIgnoreCase("discordauth")) {
-            if(strings.length == 0) {
+            if (strings.length == 0) {
                 player.sendMessage(formatchat("&4Incorrect Command: /discordauth [link,unlink,status] [code]"));
                 return true;
             }
@@ -40,7 +39,7 @@ public class DiscordAuthCommand implements CommandExecutor {
                     return true;
                 }
                 //Get UUID
-                UUID uuid = getUserUUID(player.getName(), false);
+                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
@@ -53,14 +52,14 @@ public class DiscordAuthCommand implements CommandExecutor {
                     return true;
                 }
 
-                if(!plugin.getCache().verifyCode(uuid.toString(), strings[1])) {
+                if (!plugin.getCache().verifyCode(uuid.toString(), strings[1])) {
                     //code incorrect
                     player.sendMessage(formatchat("&4Sorry, that code is incorrect. Please try again"));
                     return true;
                 }
 
 
-                if(plugin.getData().addLinkedUser(player.getName(), uuid.toString(), plugin.getCache().getUUIDDiscordID(uuid.toString()))) {
+                if (plugin.getData().addLinkedUser(player.getName(), uuid.toString(), plugin.getCache().getUUIDDiscordID(uuid.toString()))) {
                     //Store Results
                     player.sendMessage(formatchat("&4Your account has been verified and is being linked"));
                     String discordDisplayName = plugin.getDiscord().Discord().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getName() + "#" + plugin.getDiscord().Discord().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getDiscriminator();
@@ -75,14 +74,14 @@ public class DiscordAuthCommand implements CommandExecutor {
 
 
             } else if (strings[0].equalsIgnoreCase("unlink")) {
-                UUID uuid = getUserUUID(player.getName(), false);
+                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
                     return true;
                 }
-                if(plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                    if(plugin.getData().removeLinkByUUID(uuid.toString())) {
+                if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
+                    if (plugin.getData().removeLinkByUUID(uuid.toString())) {
                         player.sendMessage(formatchat("&6Discord link has been removed"));
                     } else {
                         player.sendMessage(formatchat("&4Sorry, We encountered a error removing the link. Please contact staff to get assistance!"));
@@ -92,14 +91,14 @@ public class DiscordAuthCommand implements CommandExecutor {
                 }
 
             } else if (strings[0].equalsIgnoreCase("status")) {
-                UUID uuid = getUserUUID(player.getName(), false);
+                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
                     return true;
                 }
 
-                if(plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
+                if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
                     String discordDisplayName = plugin.getDiscord().Discord().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getName() + "#" + plugin.getDiscord().Discord().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getDiscriminator();
                     player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
                 } else {

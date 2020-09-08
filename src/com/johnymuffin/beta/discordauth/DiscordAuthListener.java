@@ -1,15 +1,13 @@
 package com.johnymuffin.beta.discordauth;
 
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import com.projectposeidon.api.PoseidonUUID;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Random;
 import java.util.UUID;
-
-import static com.johnymuffin.uuidcore.UUIDAPI.getUserName;
-import static com.johnymuffin.uuidcore.UUIDAPI.getUserUUID;
 
 public class DiscordAuthListener extends ListenerAdapter {
     private DiscordAuthentication plugin;
@@ -51,8 +49,7 @@ public class DiscordAuthListener extends ListenerAdapter {
                 return;
             }
             //Check we have a UUID in Storage
-            UUID uuid = getUserUUID(p.getName(), false);
-
+            UUID uuid = PoseidonUUID.getPlayerMojangUUID(p.getName());
 
             if (uuid == null) {
                 event.getChannel().sendMessage("<@" + event.getAuthor().getId() + "> Sorry, we couldn't find a UUID linked to that username" +
@@ -95,26 +92,15 @@ public class DiscordAuthListener extends ListenerAdapter {
 
             if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
 
-                Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
-                        String message = "We found the link details below";
-                        message = message + "\nUUID: " + uuid;
-                        message = message + "\nInitial Link Username: " + plugin.getData().getInitialUsernameFromDiscordID(event.getAuthor().getId());
-                        message = message + "\nCurrent Username: " + getUserName(UUID.fromString(uuid), true);
-                        String finalMessage = message;
-                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                            @Override
-                            public void run() {
+                String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
+                String message = "We found the link details below";
+                message = message + "\nUUID: " + uuid;
+                String username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                if (username == null) username = "Unknown User";
+                message = message + "\nCurrent Username: " + username;
+                String finalMessage = message;
 
-                                event.getChannel().sendMessage(finalMessage).queue();
-
-
-                            }
-                        }, 0L);
-                    }
-                }, 0L);
+                event.getChannel().sendMessage(finalMessage).queue();
 
 
             } else {
