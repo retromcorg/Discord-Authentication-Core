@@ -49,7 +49,7 @@ public class DiscordAuthListener extends ListenerAdapter {
                 return;
             }
             //Check we have a UUID in Storage
-            UUID uuid = PoseidonUUID.getPlayerMojangUUID(p.getName());
+            UUID uuid = plugin.getPlayerUUID(p.getName());
 
             if (uuid == null) {
                 event.getChannel().sendMessage("<@" + event.getAuthor().getId() + "> Sorry, we couldn't find a UUID linked to that username" +
@@ -95,7 +95,10 @@ public class DiscordAuthListener extends ListenerAdapter {
                 String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
                 String message = "We found the link details below";
                 message = message + "\nUUID: " + uuid;
-                String username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                String username = null;
+                if (plugin.isPoseidonPresent()) {
+                    username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                }
                 if (username == null) username = "Unknown User";
                 message = message + "\nCurrent Username: " + username;
                 String finalMessage = message;

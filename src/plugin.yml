@@ -1,8 +1,8 @@
 name: DiscordAuthentication
 main: com.johnymuffin.beta.discordauth.DiscordAuthentication
 author: JohnyMuffin
-version: 1.1.0
-depend: [DiscordCore, UUIDCore]
+version: 1.1.1
+depend: [DiscordCore]
 commands:
   discordauth:
     description: Basic DiscordAuth commands

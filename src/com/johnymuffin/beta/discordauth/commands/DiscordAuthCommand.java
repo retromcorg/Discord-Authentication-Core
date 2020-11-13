@@ -1,7 +1,6 @@
 package com.johnymuffin.beta.discordauth.commands;
 
 import com.johnymuffin.beta.discordauth.DiscordAuthentication;
-import com.projectposeidon.api.PoseidonUUID;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -39,7 +38,7 @@ public class DiscordAuthCommand implements CommandExecutor {
                     return true;
                 }
                 //Get UUID
-                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
+                UUID uuid = plugin.getPlayerUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
@@ -62,7 +61,7 @@ public class DiscordAuthCommand implements CommandExecutor {
                 if (plugin.getData().addLinkedUser(player.getName(), uuid.toString(), plugin.getCache().getUUIDDiscordID(uuid.toString()))) {
                     //Store Results
                     player.sendMessage(formatchat("&4Your account has been verified and is being linked"));
-                    String discordDisplayName = plugin.getDiscord().Discord().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getName() + "#" + plugin.getDiscord().Discord().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getDiscriminator();
+                    String discordDisplayName = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getName() + "#" + plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getCache().getUUIDDiscordID(uuid.toString())).getDiscriminator();
                     player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
                     player.sendMessage(formatchat("&6You can unlink with /discordauth unlink"));
                 } else {
@@ -74,7 +73,7 @@ public class DiscordAuthCommand implements CommandExecutor {
 
 
             } else if (strings[0].equalsIgnoreCase("unlink")) {
-                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
+                UUID uuid = plugin.getPlayerUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
@@ -91,7 +90,7 @@ public class DiscordAuthCommand implements CommandExecutor {
                 }
 
             } else if (strings[0].equalsIgnoreCase("status")) {
-                UUID uuid = PoseidonUUID.getPlayerMojangUUID(player.getName());
+                UUID uuid = plugin.getPlayerUUID(player.getName());
                 if (uuid == null) {
                     //Players UUID can't be found
                     player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
@@ -99,7 +98,7 @@ public class DiscordAuthCommand implements CommandExecutor {
                 }
 
                 if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                    String discordDisplayName = plugin.getDiscord().Discord().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getName() + "#" + plugin.getDiscord().Discord().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getDiscriminator();
+                    String discordDisplayName = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getName() + "#" + plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getDiscriminator();
                     player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
                 } else {
                     player.sendMessage(formatchat("&4Sorry, we couldn't find a linked account to this UUID!"));
