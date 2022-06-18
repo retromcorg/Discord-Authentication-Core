@@ -20,7 +20,7 @@ public class DiscordAuthListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() || event.getAuthor().isFake()) return;
+        if (event.getAuthor().isBot() || event.isWebhookMessage()) return;
         String[] ags = event.getMessage().getContentRaw().split(" ");
         if (ags[0].toLowerCase().equals("!link")) {
             if (ags.length != 2) {

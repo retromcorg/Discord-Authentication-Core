@@ -2,6 +2,7 @@ package com.johnymuffin.beta.discordauth;
 
 import com.johnymuffin.beta.discordauth.commands.DiscordAuthCommand;
 import com.johnymuffin.discordcore.DiscordCore;
+import com.projectposeidon.api.PoseidonUUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -104,7 +105,7 @@ public class DiscordAuthentication extends JavaPlugin {
 
     public UUID getPlayerUUID(String playerName) {
         if (poseidonPresent) {
-            //TODO: Return UUID from Poseidon Cache
+            return PoseidonUUID.getPlayerGracefulUUID(playerName);
         }
         return UUID.fromString(playerName);
     }
