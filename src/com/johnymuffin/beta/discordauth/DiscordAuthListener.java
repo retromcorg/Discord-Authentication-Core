@@ -59,7 +59,7 @@ public class DiscordAuthListener extends ListenerAdapter {
 
 
             if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                event.getChannel().sendMessage("Sorry, this username is already linked to a Discord.\nYou can unlink in-game with /discord unlink").queue();
+                event.getChannel().sendMessage("Sorry, this username is already linked to a Discord.\nYou can unlink in-game with `/discordauth unlink`").queue();
                 return;
             }
 

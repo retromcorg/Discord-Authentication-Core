@@ -34,10 +34,10 @@ public class DiscordAuthentication extends JavaPlugin {
         PluginManager pm = Bukkit.getServer().getPluginManager();
         if (pm.getPlugin("DiscordCore") == null) {
             log.info("}---------------ERROR---------------{");
-            log.info("World Edit AuditLog Requires Discord Core");
+            log.info("Discord Authentication Requires Discord Core");
             log.info("Download it at: https://github.com/RhysB/Discord-Bot-Core");
             log.info("}---------------ERROR---------------{");
-            log.info("World Edit AuditLog Is Shutting Down Forcefully");
+            log.info("Discord Authentication Is Shutting Down Forcefully");
             pm.disablePlugin(this);
             return;
         }
