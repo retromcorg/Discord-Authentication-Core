@@ -31,7 +31,7 @@ public class DiscordAuthListener extends ListenerAdapter {
             Boolean found = false;
             Player p = null;
             if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
-                event.getChannel().sendMessage("Sorry, this account has already been linked.\nYou can unlike with !unlink").queue();
+                event.getChannel().sendMessage("Sorry, this account has already been linked.\nYou can unlink with !unlink").queue();
                 return;
             }
 
