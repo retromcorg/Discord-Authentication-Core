@@ -10,6 +10,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DiscordAuthentication extends JavaPlugin {
@@ -22,6 +23,8 @@ public class DiscordAuthentication extends JavaPlugin {
     public DiscordAuthDatafile data;
     //Poseidon
     private boolean poseidonPresent = false;
+
+    private DiscordAuthConfig config;
 
     @Override
     public void onEnable() {
@@ -53,6 +56,8 @@ public class DiscordAuthentication extends JavaPlugin {
         data = new DiscordAuthDatafile(plugin);
         cache = new DiscordAuthCache(plugin);
 
+        config = new DiscordAuthConfig(plugin);
+
 
         final DiscordAuthListener DAL = new DiscordAuthListener(plugin);
         discord.getDiscordBot().jda.addEventListener(DAL);
@@ -71,6 +76,10 @@ public class DiscordAuthentication extends JavaPlugin {
     public void onDisable() {
         data.saveConfig();
         log.info("[" + pdf.getName() + "] Has Been Disabled");
+    }
+
+    public void logger(Level level, String message) {
+        log.log(level, "[" + pdf.getName() + "] " + message);
     }
 
     public DiscordCore getDiscord() {
@@ -110,6 +119,9 @@ public class DiscordAuthentication extends JavaPlugin {
         return UUID.fromString(playerName);
     }
 
+    public DiscordAuthConfig getConfig() {
+        return config;
+    }
 }
 
 class DiscordAuthenticationCommands {
