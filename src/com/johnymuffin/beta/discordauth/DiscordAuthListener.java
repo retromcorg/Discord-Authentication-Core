@@ -1,122 +1,95 @@
 package com.johnymuffin.beta.discordauth;
 
-import com.projectposeidon.api.PoseidonUUID;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerListener;
 
-import java.util.Random;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
-public class DiscordAuthListener extends ListenerAdapter {
+public class DiscordAuthListener extends PlayerListener {
     private DiscordAuthentication plugin;
-
 
     public DiscordAuthListener(DiscordAuthentication plugin) {
         this.plugin = plugin;
 
     }
 
-    @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() || event.isWebhookMessage()) return;
-        String[] ags = event.getMessage().getContentRaw().split(" ");
-        if (ags[0].toLowerCase().equals("!link")) {
-            if (ags.length != 2) {
-                event.getChannel().sendMessage("Incorrect Usage: \"!link username\"").queue();
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        plugin.getData().updateLastKnownUsername(event.getPlayer().getUniqueId(), event.getPlayer().getName());
+
+        final UUID uuid = event.getPlayer().getUniqueId();
+
+        if (this.plugin.getConfig().getConfigBoolean("settings.discord.automatic-nickname.enabled")) {
+            //Check if the player has a linked account
+            if (!this.plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
                 return;
             }
-            //Start Verification
-            Boolean found = false;
-            Player p = null;
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
-                event.getChannel().sendMessage("Sorry, this account has already been linked.\nYou can unlink with !unlink").queue();
-                return;
-            }
+            final String playerUsername = event.getPlayer().getName();
+            final String discordID = this.plugin.getData().getDiscordIDFromUUID(event.getPlayer().getUniqueId().toString());
+            final List<Object> guilds = this.plugin.getConfig().getAutomaticNicknameGuilds();
+            Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, () -> {
+                //Loop through all guilds
+                for (Object guildIDObject : guilds) {
+                    String guildID = String.valueOf(guildIDObject);
+                    if (guildID.equalsIgnoreCase("0")) {
+                        continue;
+                    }
+                    User user = plugin.getDiscord().getDiscordBot().getJda().getUserById(discordID);
 
+                    if (user == null) {
+                        plugin.logger(Level.WARNING, "User is null, they might not share a server with the bot");
+                        return;
+                    }
 
-            for (Player p2 : Bukkit.getServer().getOnlinePlayers()) {
-                if (ags[1].equalsIgnoreCase(p2.getName())) {
-                    //Player is online
-                    found = true;
-                    p = p2;
-                    break;
+                    //Check if the user is in the guild
+                    boolean isMember = false;
+                    Guild guild2 = null;
+                    for (Guild guild : plugin.getDiscord().getDiscordBot().getJda().getGuilds()) {
+                        if (guild.getId().equalsIgnoreCase(guildID)) {
+                            isMember = true;
+                            guild2 = guild;
+                            break;
+                        }
+                    }
+
+                    if (!isMember) {
+                        plugin.logger(Level.WARNING, "the bot is not a member of guild " + guildID + " and thus unable to update the nickname for " + playerUsername);
+                        continue;
+                    }
+
+                    if (!guild2.isMember(user)) {
+                        plugin.logger(Level.WARNING, "the user " + playerUsername + " is not a member of guild " + guildID + " and thus unable to update the nickname for " + playerUsername);
+                        continue;
+                    }
+
+                    String guildName = guild2.getName();
+
+                    Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
+                    try {
+//                            Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
+                        plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).modifyNickname(member, playerUsername).queue();
+                        plugin.logInfo("Updated nickname for " + playerUsername + " with Discord name " + user.getName() + " in guild " + guildName);
+                    } catch (HierarchyException exception) {
+                        plugin.logger(Level.WARNING, "Could not update nickname for " + playerUsername + " in guild " + guildName + ". The user has a higher role than the bot");
+                    } catch (InsufficientPermissionException exception) {
+                        plugin.logger(Level.WARNING, "Could not update nickname for " + playerUsername + " in guild " + guildName + ". The bot does not have permission to change their nickname");
+                    } catch (Exception exception) {
+                        plugin.logger(Level.WARNING, "Could not update nickname for " + playerUsername + " in guild " + guildName + ". An unknown error occurred");
+                        exception.printStackTrace();
+                    }
+
                 }
-            }
-            if (!found) {
-                event.getChannel().sendMessage("Could not find a player online with that username\nPlease ensure you are online and have specified the correct name").queue();
-                return;
-            }
-            //Check we have a UUID in Storage
-            UUID uuid = plugin.getPlayerUUID(p.getName());
+            }, 0L);
 
-            if (uuid == null) {
-                event.getChannel().sendMessage("<@" + event.getAuthor().getId() + "> Sorry, we couldn't find a UUID linked to that username" +
-                        "\nPlease ensure you are using a Premium account or try again later. If the issue persists please contact staff").queue();
-                return;
-            }
-
-
-            if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                event.getChannel().sendMessage("Sorry, this username is already linked to a Discord.\nYou can unlink in-game with `/discordauth unlink`").queue();
-                return;
-            }
-
-
-            event.getChannel().sendMessage("<@" + event.getAuthor().getId() + "> I have direct messaged you info to continue the linking process" +
-                    "\nPlease ensure you have Direct Messages enabled").queue();
-            event.getAuthor().openPrivateChannel().queue((channel) ->
-            {
-                String securityCode = generateCode();
-                channel.sendMessage("You have started the linking process" +
-                        "\nPlease run the command \"/discordauth link " + securityCode + "\" in-game").queue();
-                plugin.getCache().addCodeToken(uuid.toString(), securityCode, event.getAuthor().getId());
-            });
-
-
-        } else if (ags[0].toLowerCase().equals("!unlink")) {
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
-                if (plugin.getData().removeLinkFromDiscordID(event.getAuthor().getId())) {
-                    event.getChannel().sendMessage("This Discord has been unlinked from any account").queue();
-                } else {
-                    event.getChannel().sendMessage("An error occurred during unlinking. Please contact staff").queue();
-                }
-                return;
-            } else {
-                event.getChannel().sendMessage("This Discord account is currently not linked to any account").queue();
-            }
-
-        } else if (ags[0].toLowerCase().equals("!status")) {
-
-
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
-
-                String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
-                String message = "We found the link details below";
-                message = message + "\nUUID: " + uuid;
-                String username = null;
-                if (plugin.isPoseidonPresent()) {
-                    username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
-                }
-                if (username == null) username = "Unknown User";
-                message = message + "\nCurrent Username: " + username;
-                String finalMessage = message;
-
-                event.getChannel().sendMessage(finalMessage).queue();
-
-
-            } else {
-                event.getChannel().sendMessage("This Discord account is currently not linked to any account").queue();
-            }
 
         }
     }
 
-
-    private String generateCode() {
-        Random rnd = new Random();
-        int n = 100000 + rnd.nextInt(900000);
-        return String.valueOf(n);
-    }
 }

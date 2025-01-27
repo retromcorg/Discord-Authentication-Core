@@ -25,6 +25,11 @@ public class DiscordAuthConfig extends Configuration {
 
         generateConfigOption("settings.discord.automatic-nickname.enabled", false);
         generateConfigOption("settings.discord.automatic-nickname.info", "This will automatically set the nickname of the user to their minecraft username.");
+
+        // Setting that sends linking message via DM as opposed to linking channel
+        generateConfigOption("settings.discord.send-linking-code-via-dm.info", "This will send the linking code via DM instead of in the channel the command was run in. Sending via DMs can be problematic if users have DMs disabled.");
+        generateConfigOption("settings.discord.send-linking-code-via-dm.enabled", false);
+
         getAutomaticNicknameGuilds();
 
     }

@@ -1,6 +1,8 @@
 package com.johnymuffin.beta.discordauth;
 
 import com.johnymuffin.beta.discordauth.commands.DiscordAuthCommand;
+import com.johnymuffin.beta.discordauth.commands.DiscordLinkCommand;
+import com.johnymuffin.beta.discordauth.commands.DiscordUnlinkCommand;
 import com.johnymuffin.discordcore.DiscordCore;
 import com.projectposeidon.api.PoseidonUUID;
 import org.bukkit.Bukkit;
@@ -21,8 +23,6 @@ public class DiscordAuthentication extends JavaPlugin {
     private DiscordAuthCache cache;
     private String pluginName;
     public DiscordAuthDatafile data;
-    //Poseidon
-    private boolean poseidonPresent = false;
 
     private DiscordAuthConfig config;
 
@@ -44,29 +44,30 @@ public class DiscordAuthentication extends JavaPlugin {
             pm.disablePlugin(this);
             return;
         }
-        if (testClassExistence("com.projectposeidon.api.PoseidonUUID")) {
-            poseidonPresent = true;
-            logInfo("Project Poseidon detected, using valid UUIDs.");
-        } else {
-            logInfo("Project Poseidon support disabled.");
-        }
 
+        // Disable plugin if Poseidon is not present
+        if (!testClassExistence("com.projectposeidon.api.PoseidonUUID")) {
+            log.info("This plugin requires Project Poseidon or one of its forks to function.");
+            pm.disablePlugin(this);
+            return;
+        }
 
         discord = (DiscordCore) getServer().getPluginManager().getPlugin("DiscordCore");
         data = new DiscordAuthDatafile(plugin);
         cache = new DiscordAuthCache(plugin);
-
         config = new DiscordAuthConfig(plugin);
 
-
-        final DiscordAuthListener DAL = new DiscordAuthListener(plugin);
+        final com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener DAL = new com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener(plugin);
         discord.getDiscordBot().jda.addEventListener(DAL);
 
-        final DiscordAuthenticationCommands DAC = new DiscordAuthenticationCommands(plugin);
+        // Register Commands
+        plugin.getCommand("discordauth").setExecutor(new DiscordAuthCommand(plugin)); // Deprecated Command
+        plugin.getCommand("link").setExecutor(new DiscordLinkCommand(plugin));
+        plugin.getCommand("unlink").setExecutor(new DiscordUnlinkCommand(plugin));
 
 
         //Update Last Known Username Logic
-        final DiscordAuthUUIDJoinListener DAUJL = new DiscordAuthUUIDJoinListener(plugin);
+        final DiscordAuthListener DAUJL = new DiscordAuthListener(plugin);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, DAUJL, Event.Priority.Monitor, plugin);
 
 
@@ -107,29 +108,11 @@ public class DiscordAuthentication extends JavaPlugin {
         log.info("[" + pluginName + "] " + s);
     }
 
-    public boolean isPoseidonPresent() {
-        return poseidonPresent;
-    }
-
-
     public UUID getPlayerUUID(String playerName) {
-        if (poseidonPresent) {
-            return PoseidonUUID.getPlayerGracefulUUID(playerName);
-        }
-        return UUID.fromString(playerName);
+        return PoseidonUUID.getPlayerGracefulUUID(playerName);
     }
 
     public DiscordAuthConfig getConfig() {
         return config;
     }
-}
-
-class DiscordAuthenticationCommands {
-    DiscordAuthentication plugin;
-
-    public DiscordAuthenticationCommands(DiscordAuthentication plugin) {
-        this.plugin = plugin;
-        plugin.getCommand("discordauth").setExecutor(new DiscordAuthCommand(plugin));
-    }
-
 }

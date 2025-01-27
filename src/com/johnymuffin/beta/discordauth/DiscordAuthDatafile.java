@@ -1,5 +1,7 @@
 package com.johnymuffin.beta.discordauth;
 
+import com.johnymuffin.beta.discordauth.events.DiscordAuthenticationLinkEvent;
+import com.johnymuffin.beta.discordauth.events.DiscordAuthenticationUnlinkEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.util.config.Configuration;
 
@@ -31,6 +33,7 @@ public class DiscordAuthDatafile {
 
     }
 
+    @Deprecated
     public boolean isUUIDAlreadyLinked(String uuid) {
         if (discordAuthDatabase.containsKey(uuid)) {
             return true;
@@ -38,6 +41,11 @@ public class DiscordAuthDatafile {
         return false;
     }
 
+    public boolean isUUIDAlreadyLinked(UUID uuid) {
+        return isUUIDAlreadyLinked(uuid.toString());
+    }
+
+    @Deprecated
     public boolean isDiscordIDAlreadyLinked(String discordID) {
 
         //Iterate through all keys
@@ -49,10 +57,25 @@ public class DiscordAuthDatafile {
         return false;
     }
 
+    public boolean isDiscordIDAlreadyLinked(long discordID) {
+        return isDiscordIDAlreadyLinked(String.valueOf(discordID));
+    }
+
+    @Deprecated
     public boolean removeLinkFromDiscordID(String discordID) {
         //Iterate through all keys
         for (String key1 : discordAuthDatabase.keySet()) {
             if (discordAuthDatabase.get(key1).get("discordID").equals(discordID)) {
+                long DiscordID = Long.parseLong(discordID);
+                UUID minecraftUUID = UUID.fromString(key1);
+
+                // Call DiscordAuthenticationUnlinkEvent event in the next tick
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    // Call DiscordAuthenticationUnlinkEvent event
+                    DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(minecraftUUID, DiscordID);
+                    Bukkit.getServer().getPluginManager().callEvent(event);
+                });
+
                 discordAuthDatabase.remove(key1);
                 return true;
             }
@@ -60,15 +83,34 @@ public class DiscordAuthDatafile {
         return false;
     }
 
+    public boolean removeLinkFromDiscordID(long discordID) {
+        return removeLinkFromDiscordID(String.valueOf(discordID));
+    }
+
+    @Deprecated
     public boolean removeLinkByUUID(String uuid) {
         if (discordAuthDatabase.containsKey(uuid)) {
+            long discordID = Long.parseLong(discordAuthDatabase.get(uuid).get("discordID"));
             discordAuthDatabase.remove(uuid);
+
+            // Call DiscordAuthenticationUnlinkEvent event in the next tick
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                // Call DiscordAuthenticationUnlinkEvent event
+                DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(UUID.fromString(uuid), discordID);
+                Bukkit.getServer().getPluginManager().callEvent(event);
+            });
+
             return true;
         }
         return false;
     }
 
+    public boolean removeLinkByUUID(UUID uuid) {
+        return removeLinkByUUID(uuid.toString());
+    }
 
+
+    @Deprecated
     public boolean addLinkedUser(String username, String uuid, String discordID) {
         if (isUUIDAlreadyLinked(uuid) || isDiscordIDAlreadyLinked(discordID)) {
             //If user is already linked return false
@@ -80,17 +122,29 @@ public class DiscordAuthDatafile {
         tmp.put("discordID", discordID);
 
         discordAuthDatabase.put(uuid, tmp);
+
+        // Call DiscordAuthenticationLinkEvent event
+        DiscordAuthenticationLinkEvent event = new DiscordAuthenticationLinkEvent(UUID.fromString(uuid), Long.parseLong(discordID));
+        Bukkit.getServer().getPluginManager().callEvent(event);
+
         return true;
     }
 
+    public boolean addLinkedUser(String username, UUID uuid, long discordID) {
+        return addLinkedUser(username, uuid.toString(), String.valueOf(discordID));
+    }
+
+    @Deprecated
     public String getDiscordIDFromUUID(String uuid) {
         if (!discordAuthDatabase.containsKey(uuid)) {
             return null;
         } else {
             return discordAuthDatabase.get(uuid).get("discordID");
         }
+    }
 
-
+    public long getDiscordIDFromUUID(UUID uuid) {
+        return Long.parseLong(getDiscordIDFromUUID(uuid.toString()));
     }
 
     @Deprecated
@@ -98,6 +152,7 @@ public class DiscordAuthDatafile {
         return getLastUsernameFromDiscordID(discordID);
     }
 
+    @Deprecated
     public String getLastUsernameFromDiscordID(String discordID) {
         if (!isDiscordIDAlreadyLinked(discordID)) {
             return null;
@@ -109,7 +164,11 @@ public class DiscordAuthDatafile {
         return discordAuthDatabase.get(uuid).get("username");
     }
 
+    public String getLastUsernameFromDiscordID(long discordID) {
+        return getLastUsernameFromDiscordID(String.valueOf(discordID));
+    }
 
+    @Deprecated
     public String getUUIDFromDiscordID(String discordID) {
         for (String key1 : discordAuthDatabase.keySet()) {
             if (discordAuthDatabase.get(key1).get("discordID").equals(discordID)) {
@@ -117,6 +176,10 @@ public class DiscordAuthDatafile {
             }
         }
         return null;
+    }
+
+    public UUID getUUIDFromDiscordID(long discordID) {
+        return UUID.fromString(getUUIDFromDiscordID(String.valueOf(discordID)));
     }
 
     public void updateLastKnownUsername(UUID uuid, String username) {
@@ -127,10 +190,7 @@ public class DiscordAuthDatafile {
         if (!discordAuthDatabase.get(uuid2).get("username").equals(username)) {
             discordAuthDatabase.get(uuid2).replace("username", username);
         }
-
-
     }
-
 
     public void saveConfig() {
         config.setProperty("authentication", discordAuthDatabase);

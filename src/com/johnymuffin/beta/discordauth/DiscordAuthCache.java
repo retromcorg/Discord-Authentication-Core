@@ -1,14 +1,13 @@
 package com.johnymuffin.beta.discordauth;
 
-import org.bukkit.entity.Player;
-
 import java.util.HashMap;
+import java.util.UUID;
 
 
 public class DiscordAuthCache {
     DiscordAuthentication plugin;
 
-    private HashMap<String, HashMap<String, String>> codeCache = new HashMap<String, HashMap<String, String> >();
+    private HashMap<String, HashMap<String, String>> codeCache = new HashMap<String, HashMap<String, String>>();
 
 
     public DiscordAuthCache(DiscordAuthentication plugin) {
@@ -18,7 +17,7 @@ public class DiscordAuthCache {
 
     public void addCodeToken(String uuid, String code, String discordID) {
         //Replace possible existing code
-        if(codeCache.containsKey(uuid)) {
+        if (codeCache.containsKey(uuid)) {
             codeCache.remove(uuid);
         }
         //Store code and ID
@@ -29,32 +28,54 @@ public class DiscordAuthCache {
 
     }
 
+    @Deprecated
     public boolean isUserPending(String uuid) {
-        if(codeCache.containsKey(uuid)) {
+        if (codeCache.containsKey(uuid)) {
             return true;
         }
         return false;
     }
 
-    public boolean verifyCode(String uuid, String codeAttempt){
-        if(!codeCache.containsKey(uuid)) {
+    public boolean isUserPending(UUID uuid) {
+        return isUserPending(uuid.toString());
+    }
+
+    @Deprecated
+    public boolean verifyCode(String uuid, String codeAttempt) {
+        if (!codeCache.containsKey(uuid)) {
             return false;
         }
-        if(codeCache.get(uuid).get("code").equalsIgnoreCase(codeAttempt)) {
+        if (codeCache.get(uuid).get("code").equalsIgnoreCase(codeAttempt)) {
             return true;
         }
 
         return false;
     }
 
-
-    public String getUUIDDiscordID(String uuid) {
-        if(!codeCache.containsKey(uuid)) {
-            return "0";
-        }
-       return codeCache.get(uuid).get("id");
-
+    public boolean verifyCode(UUID uuid, String codeAttempt) {
+        return verifyCode(uuid.toString(), codeAttempt);
     }
 
+    // Remove the code from the cache
+    public void removeCode(UUID uuid, String code) {
+        String uuidString = uuid.toString();
 
+        if (codeCache.containsKey(uuidString)) {
+            if (codeCache.get(uuidString).get("code").equalsIgnoreCase(code)) {
+                codeCache.remove(uuidString);
+            }
+        }
+    }
+
+    @Deprecated
+    public String getUUIDDiscordID(String uuid) {
+        if (!codeCache.containsKey(uuid)) {
+            return "0";
+        }
+        return codeCache.get(uuid).get("id");
+    }
+
+    public long getUUIDDiscordID(UUID uuid) {
+        return Long.parseLong(getUUIDDiscordID(uuid.toString()));
+    }
 }
