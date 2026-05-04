@@ -25,6 +25,7 @@ public class DiscordAuthentication extends JavaPlugin {
     public DiscordAuthDatafile data;
 
     private DiscordAuthConfig config;
+    private com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener discordCommandListener;
 
     @Override
     public void onEnable() {
@@ -57,8 +58,8 @@ public class DiscordAuthentication extends JavaPlugin {
         cache = new DiscordAuthCache(plugin);
         config = new DiscordAuthConfig(plugin);
 
-        final com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener DAL = new com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener(plugin);
-        discord.getDiscordBot().jda.addEventListener(DAL);
+        discordCommandListener = new com.johnymuffin.beta.discordauth.discordcommands.DiscordAuthListener(plugin);
+        discord.getDiscordBot().jda.addEventListener(discordCommandListener);
 
         // Register Commands
         plugin.getCommand("discordauth").setExecutor(new DiscordAuthCommand(plugin)); // Deprecated Command
@@ -75,7 +76,12 @@ public class DiscordAuthentication extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        data.saveConfig();
+        if (discord != null && discordCommandListener != null && discord.getDiscordBot() != null && discord.getDiscordBot().jda != null) {
+            discord.getDiscordBot().jda.removeEventListener(discordCommandListener);
+        }
+        if (data != null) {
+            data.saveConfig();
+        }
         log.info("[" + pdf.getName() + "] Has Been Disabled");
     }
 

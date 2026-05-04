@@ -1,6 +1,7 @@
 package com.johnymuffin.beta.discordauth.commands;
 
 import com.johnymuffin.beta.discordauth.DiscordAuthentication;
+import net.dv8tion.jda.api.entities.User;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -41,7 +42,12 @@ public class DiscordAuthCommand implements CommandExecutor {
                 }
 
                 if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                    String discordDisplayName = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getName() + "#" + plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString())).getDiscriminator();
+                    User discordUser = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString()));
+                    if (discordUser == null) {
+                        player.sendMessage(formatchat("&6Linked account found, but the Discord user is not currently visible to the bot."));
+                        return true;
+                    }
+                    String discordDisplayName = discordUser.getName() + "#" + discordUser.getDiscriminator();
                     player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
                 } else {
                     player.sendMessage(formatchat("&4Sorry, we couldn't find a linked account to this UUID!"));
