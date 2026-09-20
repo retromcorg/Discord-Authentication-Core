@@ -42,12 +42,12 @@ public class DiscordAuthCommand implements CommandExecutor {
                 }
 
                 if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                    User discordUser = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString()));
+                    User discordUser = plugin.getDiscord().getDiscordBot().getJDA().getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString()));
                     if (discordUser == null) {
                         player.sendMessage(formatchat("&6Linked account found, but the Discord user is not currently visible to the bot."));
                         return true;
                     }
-                    String discordDisplayName = discordUser.getName() + "#" + discordUser.getDiscriminator();
+                    String discordDisplayName = discordUser.getName();
                     player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
                 } else {
                     player.sendMessage(formatchat("&4Sorry, we couldn't find a linked account to this UUID!"));

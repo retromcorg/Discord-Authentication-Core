@@ -41,7 +41,7 @@ public class DiscordAuthListener extends PlayerListener {
                     if (guildID.equalsIgnoreCase("0")) {
                         continue;
                     }
-                    User user = plugin.getDiscord().getDiscordBot().getJda().getUserById(discordID);
+                    User user = plugin.getDiscord().getDiscordBot().getJDA().getUserById(discordID);
 
                     if (user == null) {
                         plugin.logger(Level.WARNING, "User is null, they might not share a server with the bot");
@@ -51,7 +51,7 @@ public class DiscordAuthListener extends PlayerListener {
                     //Check if the user is in the guild
                     boolean isMember = false;
                     Guild guild2 = null;
-                    for (Guild guild : plugin.getDiscord().getDiscordBot().getJda().getGuilds()) {
+                    for (Guild guild : plugin.getDiscord().getDiscordBot().getJDA().getGuilds()) {
                         if (guild.getId().equalsIgnoreCase(guildID)) {
                             isMember = true;
                             guild2 = guild;
@@ -71,10 +71,9 @@ public class DiscordAuthListener extends PlayerListener {
 
                     String guildName = guild2.getName();
 
-                    Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
+                    Member member = plugin.getDiscord().getDiscordBot().getJDA().getGuildById(guildID).getMember(user);
                     try {
-//                            Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
-                        plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).modifyNickname(member, playerUsername).queue();
+                        plugin.getDiscord().getDiscordBot().getJDA().getGuildById(guildID).modifyNickname(member, playerUsername).queue();
                         plugin.logInfo("Updated nickname for " + playerUsername + " with Discord name " + user.getName() + " in guild " + guildName);
                     } catch (HierarchyException exception) {
                         plugin.logger(Level.WARNING, "Could not update nickname for " + playerUsername + " in guild " + guildName + ". The user has a higher role than the bot");
