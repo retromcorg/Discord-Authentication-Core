@@ -71,9 +71,7 @@ public class DiscordAuthDatafile {
 
                 // Call DiscordAuthenticationUnlinkEvent event in the next tick
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                    // Call DiscordAuthenticationUnlinkEvent event
-                    DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(minecraftUUID, DiscordID);
-                    Bukkit.getServer().getPluginManager().callEvent(event);
+                    new DiscordAuthenticationUnlinkEvent(minecraftUUID, DiscordID).callEvent();
                 });
 
                 discordAuthDatabase.remove(key1);
@@ -95,9 +93,7 @@ public class DiscordAuthDatafile {
 
             // Call DiscordAuthenticationUnlinkEvent event in the next tick
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                // Call DiscordAuthenticationUnlinkEvent event
-                DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(UUID.fromString(uuid), discordID);
-                Bukkit.getServer().getPluginManager().callEvent(event);
+                new DiscordAuthenticationUnlinkEvent(UUID.fromString(uuid), discordID).callEvent();
             });
 
             return true;
@@ -124,8 +120,7 @@ public class DiscordAuthDatafile {
         discordAuthDatabase.put(uuid, tmp);
 
         // Call DiscordAuthenticationLinkEvent event
-        DiscordAuthenticationLinkEvent event = new DiscordAuthenticationLinkEvent(UUID.fromString(uuid), Long.parseLong(discordID));
-        Bukkit.getServer().getPluginManager().callEvent(event);
+        new DiscordAuthenticationLinkEvent(UUID.fromString(uuid), Long.parseLong(discordID)).callEvent();
 
         return true;
     }

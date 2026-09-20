@@ -6,7 +6,6 @@ import com.johnymuffin.beta.discordauth.commands.DiscordUnlinkCommand;
 import com.projectposeidon.api.PoseidonUUID;
 import org.retromc.discordcore.v6.DiscordCorePlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -49,7 +48,7 @@ public class DiscordAuthentication extends JavaPlugin {
             pm.disablePlugin(this);
             return;
         }
-        
+
         data = new DiscordAuthDatafile(plugin);
         cache = new DiscordAuthCache(plugin);
         config = new DiscordAuthConfig(plugin);
@@ -63,9 +62,8 @@ public class DiscordAuthentication extends JavaPlugin {
         plugin.getCommand("unlink").setExecutor(new DiscordUnlinkCommand(plugin));
 
 
-        //Update Last Known Username Logic
-        final DiscordAuthListener DAUJL = new DiscordAuthListener(plugin);
-        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, DAUJL, Event.Priority.Monitor, plugin);
+        // Update Last Known Username Logic
+        getServer().getPluginManager().registerEvents(new DiscordAuthListener(plugin), plugin);
 
 
     }

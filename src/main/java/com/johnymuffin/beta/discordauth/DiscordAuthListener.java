@@ -6,21 +6,24 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class DiscordAuthListener extends PlayerListener {
-    private DiscordAuthentication plugin;
+public class DiscordAuthListener implements Listener {
+    private final DiscordAuthentication plugin;
 
     public DiscordAuthListener(DiscordAuthentication plugin) {
         this.plugin = plugin;
 
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         plugin.getData().updateLastKnownUsername(event.getPlayer().getUniqueId(), event.getPlayer().getName());
 
