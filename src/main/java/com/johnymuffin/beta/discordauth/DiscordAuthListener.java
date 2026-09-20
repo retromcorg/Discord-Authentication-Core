@@ -6,21 +6,24 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class DiscordAuthListener extends PlayerListener {
-    private DiscordAuthentication plugin;
+public class DiscordAuthListener implements Listener {
+    private final DiscordAuthentication plugin;
 
     public DiscordAuthListener(DiscordAuthentication plugin) {
         this.plugin = plugin;
 
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         plugin.getData().updateLastKnownUsername(event.getPlayer().getUniqueId(), event.getPlayer().getName());
 
@@ -28,11 +31,11 @@ public class DiscordAuthListener extends PlayerListener {
 
         if (this.plugin.getConfig().getConfigBoolean("settings.discord.automatic-nickname.enabled")) {
             //Check if the player has a linked account
-            if (!this.plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
+            if (!this.plugin.getData().isUUIDAlreadyLinked(uuid)) {
                 return;
             }
             final String playerUsername = event.getPlayer().getName();
-            final String discordID = this.plugin.getData().getDiscordIDFromUUID(event.getPlayer().getUniqueId().toString());
+            final long discordID = this.plugin.getData().getDiscordIDFromUUID(event.getPlayer().getUniqueId());
             final List<Object> guilds = this.plugin.getConfig().getAutomaticNicknameGuilds();
             Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, () -> {
                 //Loop through all guilds
@@ -41,7 +44,7 @@ public class DiscordAuthListener extends PlayerListener {
                     if (guildID.equalsIgnoreCase("0")) {
                         continue;
                     }
-                    User user = plugin.getDiscord().getDiscordBot().getJda().getUserById(discordID);
+                    User user = plugin.getDiscord().getDiscordBot().getJDA().getUserById(discordID);
 
                     if (user == null) {
                         plugin.logger(Level.WARNING, "User is null, they might not share a server with the bot");
@@ -51,7 +54,7 @@ public class DiscordAuthListener extends PlayerListener {
                     //Check if the user is in the guild
                     boolean isMember = false;
                     Guild guild2 = null;
-                    for (Guild guild : plugin.getDiscord().getDiscordBot().getJda().getGuilds()) {
+                    for (Guild guild : plugin.getDiscord().getDiscordBot().getJDA().getGuilds()) {
                         if (guild.getId().equalsIgnoreCase(guildID)) {
                             isMember = true;
                             guild2 = guild;
@@ -71,10 +74,9 @@ public class DiscordAuthListener extends PlayerListener {
 
                     String guildName = guild2.getName();
 
-                    Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
+                    Member member = guild2.getMember(user);
                     try {
-//                            Member member = plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).getMember(user);
-                        plugin.getDiscord().getDiscordBot().getJda().getGuildById(guildID).modifyNickname(member, playerUsername).queue();
+                        guild2.modifyNickname(member, playerUsername).queue();
                         plugin.logInfo("Updated nickname for " + playerUsername + " with Discord name " + user.getName() + " in guild " + guildName);
                     } catch (HierarchyException exception) {
                         plugin.logger(Level.WARNING, "Could not update nickname for " + playerUsername + " in guild " + guildName + ". The user has a higher role than the bot");

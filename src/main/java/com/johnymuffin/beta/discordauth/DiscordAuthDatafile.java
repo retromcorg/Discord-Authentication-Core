@@ -3,6 +3,7 @@ package com.johnymuffin.beta.discordauth;
 import com.johnymuffin.beta.discordauth.events.DiscordAuthenticationLinkEvent;
 import com.johnymuffin.beta.discordauth.events.DiscordAuthenticationUnlinkEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Event;
 import org.bukkit.util.config.Configuration;
 
 import java.io.File;
@@ -69,12 +70,7 @@ public class DiscordAuthDatafile {
                 long DiscordID = Long.parseLong(discordID);
                 UUID minecraftUUID = UUID.fromString(key1);
 
-                // Call DiscordAuthenticationUnlinkEvent event in the next tick
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                    // Call DiscordAuthenticationUnlinkEvent event
-                    DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(minecraftUUID, DiscordID);
-                    Bukkit.getServer().getPluginManager().callEvent(event);
-                });
+                fireEventOnPrimaryThread(new DiscordAuthenticationUnlinkEvent(minecraftUUID, DiscordID));
 
                 discordAuthDatabase.remove(key1);
                 return true;
@@ -93,12 +89,7 @@ public class DiscordAuthDatafile {
             long discordID = Long.parseLong(discordAuthDatabase.get(uuid).get("discordID"));
             discordAuthDatabase.remove(uuid);
 
-            // Call DiscordAuthenticationUnlinkEvent event in the next tick
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                // Call DiscordAuthenticationUnlinkEvent event
-                DiscordAuthenticationUnlinkEvent event = new DiscordAuthenticationUnlinkEvent(UUID.fromString(uuid), discordID);
-                Bukkit.getServer().getPluginManager().callEvent(event);
-            });
+            fireEventOnPrimaryThread(new DiscordAuthenticationUnlinkEvent(UUID.fromString(uuid), discordID));
 
             return true;
         }
@@ -123,9 +114,7 @@ public class DiscordAuthDatafile {
 
         discordAuthDatabase.put(uuid, tmp);
 
-        // Call DiscordAuthenticationLinkEvent event
-        DiscordAuthenticationLinkEvent event = new DiscordAuthenticationLinkEvent(UUID.fromString(uuid), Long.parseLong(discordID));
-        Bukkit.getServer().getPluginManager().callEvent(event);
+        fireEventOnPrimaryThread(new DiscordAuthenticationLinkEvent(UUID.fromString(uuid), Long.parseLong(discordID)));
 
         return true;
     }
@@ -195,5 +184,13 @@ public class DiscordAuthDatafile {
     public void saveConfig() {
         config.setProperty("authentication", discordAuthDatabase);
         config.save();
+    }
+
+    private void fireEventOnPrimaryThread(Event event) {
+        if (Bukkit.getServer().isPrimaryThread()) {
+            event.callEvent();
+            return;
+        }
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, event::callEvent);
     }
 }

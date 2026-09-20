@@ -1,8 +1,6 @@
 package com.johnymuffin.beta.discordauth.commands;
 
 import com.johnymuffin.beta.discordauth.DiscordAuthentication;
-import com.projectposeidon.api.PoseidonUUID;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -32,7 +30,7 @@ public class DiscordLinkCommand extends DiscordBaseCommand {
         UUID uuid = player.getUniqueId();
 
         // Check if user is already linked
-        if(data.isUUIDAlreadyLinked(uuid.toString())) {
+        if(data.isUUIDAlreadyLinked(uuid)) {
             player.sendMessage(formatchat("&4Your Minecraft account is already linked to a Discord account."));
             player.sendMessage(formatchat("&4If you want to unlink your account, please run /unlink"));
             return true;
@@ -40,7 +38,7 @@ public class DiscordLinkCommand extends DiscordBaseCommand {
 
 
         // Check if user is pending
-        if(!cache.isUserPending(uuid.toString())) {
+        if(!cache.isUserPending(uuid)) {
             player.sendMessage(formatchat("&4Discord Linking Process Not Started"));
             player.sendMessage(formatchat("&4Please start the linking process on Discord"));
             player.sendMessage(formatchat("&4Please run \"!link (username)\" on our Discord"));

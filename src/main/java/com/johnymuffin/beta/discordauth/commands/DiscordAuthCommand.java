@@ -34,21 +34,15 @@ public class DiscordAuthCommand implements CommandExecutor {
             }
 
             if (strings[0].equalsIgnoreCase("status")) {
-                UUID uuid = plugin.getPlayerUUID(player.getName());
-                if (uuid == null) {
-                    //Players UUID can't be found
-                    player.sendMessage(formatchat("&4Sorry, we can't find a UUID corresponding to your account\nPlease make sure you are using a premium account\nIf the issue persists please contact staff!"));
-                    return true;
-                }
+                UUID uuid = player.getUniqueId();
 
-                if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
-                    User discordUser = plugin.getDiscord().getDiscordBot().jda.getUserById(plugin.getData().getDiscordIDFromUUID(uuid.toString()));
+                if (plugin.getData().isUUIDAlreadyLinked(uuid)) {
+                    User discordUser = plugin.getDiscord().getDiscordBot().getJDA().getUserById(plugin.getData().getDiscordIDFromUUID(uuid));
                     if (discordUser == null) {
                         player.sendMessage(formatchat("&6Linked account found, but the Discord user is not currently visible to the bot."));
                         return true;
                     }
-                    String discordDisplayName = discordUser.getName() + "#" + discordUser.getDiscriminator();
-                    player.sendMessage(formatchat("&6Linked to: " + discordDisplayName));
+                    player.sendMessage(formatchat("&6Linked to: " + discordUser.getName()));
                 } else {
                     player.sendMessage(formatchat("&4Sorry, we couldn't find a linked account to this UUID!"));
                 }

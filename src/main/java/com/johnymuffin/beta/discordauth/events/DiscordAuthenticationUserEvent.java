@@ -8,8 +8,8 @@ public abstract class DiscordAuthenticationUserEvent extends Event {
     private final UUID minecraftUUID;
     private final long discordID;
 
-    protected DiscordAuthenticationUserEvent(String name, UUID minecraftUUID, long discordID) {
-        super(name);
+    protected DiscordAuthenticationUserEvent(UUID minecraftUUID, long discordID) {
+        super();
         this.minecraftUUID = minecraftUUID;
         this.discordID = discordID;
     }

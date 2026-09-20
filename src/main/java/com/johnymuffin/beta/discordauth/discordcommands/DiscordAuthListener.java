@@ -1,7 +1,6 @@
 package com.johnymuffin.beta.discordauth.discordcommands;
 
 import com.johnymuffin.beta.discordauth.DiscordAuthentication;
-import com.projectposeidon.api.PoseidonUUID;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -44,9 +43,9 @@ public class DiscordAuthListener extends ListenerAdapter {
                 return;
             }
             //Start Verification
-            Boolean found = false;
+            boolean found = false;
             Player p = null;
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
+            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getIdLong())) {
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.RED);
                 embed.setTitle("Account Already Linked");
@@ -74,20 +73,10 @@ public class DiscordAuthListener extends ListenerAdapter {
                 return;
             }
             //Check we have a UUID in Storage
-            UUID uuid = plugin.getPlayerUUID(p.getName());
-
-            if (uuid == null) {
-                EmbedBuilder embed = new EmbedBuilder();
-                embed.setColor(Color.RED);
-                embed.setTitle("UUID Not Found");
-                embed.setDescription("Sorry, we couldn't find a UUID linked to that username.\n\nPlease ensure you are using a Premium account or try again later. If the issue persists please contact staff.");
-
-                event.getChannel().sendMessageEmbeds(embed.build()).queue();
-                return;
-            }
+            UUID uuid = p.getUniqueId();
 
 
-            if (plugin.getData().isUUIDAlreadyLinked(uuid.toString())) {
+            if (plugin.getData().isUUIDAlreadyLinked(uuid)) {
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.RED);
                 embed.setTitle("Account Already Linked");
@@ -147,8 +136,8 @@ public class DiscordAuthListener extends ListenerAdapter {
         } else if (ags[0].toLowerCase().equals("!unlink")) {
             plugin.logger(Level.INFO, "User: " + event.getAuthor().getName() + " | Command: " + event.getMessage().getContentRaw());
 
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
-                if (plugin.getData().removeLinkFromDiscordID(event.getAuthor().getId())) {
+            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getIdLong())) {
+                if (plugin.getData().removeLinkFromDiscordID(event.getAuthor().getIdLong())) {
                     EmbedBuilder embed = new EmbedBuilder();
                     embed.setColor(Color.GREEN);
                     embed.setTitle("Account Unlinked");
@@ -177,12 +166,12 @@ public class DiscordAuthListener extends ListenerAdapter {
         } else if (ags[0].toLowerCase().equals("!status")) {
             plugin.logger(Level.INFO, "User: " + event.getAuthor().getName() + " | Command: " + event.getMessage().getContentRaw());
 
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
+            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getIdLong())) {
 
-                String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
+                UUID uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getIdLong());
                 String message = "We found the link details below";
                 message = message + "\nUUID: " + uuid;
-                String username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                String username = Bukkit.getOfflinePlayer(uuid).getName();
                 if (username == null) username = "Unknown User";
                 message = message + "\nCurrent Username: " + username;
                 String finalMessage = message;

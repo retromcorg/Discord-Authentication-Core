@@ -2,7 +2,7 @@ name: DiscordAuthentication
 main: com.johnymuffin.beta.discordauth.DiscordAuthentication
 author: JohnyMuffin
 version: ${project.version}
-depend: [DiscordCore]
+depend: [DiscordCore-6]
 commands:
   discordauth:
     description: Basic DiscordAuth commands
